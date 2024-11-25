@@ -43,6 +43,12 @@
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 
+#include <openssl/provider.h>
+#include <openssl/core_names.h>
+#include <openssl/decoder.h>
+#include <oqs/oqs.h>
+
+
 void *
 nc_tls_session_new_wrap(void *tls_cfg)
 {
@@ -63,25 +69,102 @@ nc_tls_session_destroy_wrap(void *tls_session)
     SSL_free(tls_session);
 }
 
-void *
+SSL_CTX *
 nc_tls_config_new_wrap(int side)
 {
-    SSL_CTX *tls_cfg;
+    SSL_CTX *tls_cfg = NULL;
+    OSSL_LIB_CTX *libctx;
+    OSSL_PROVIDER *oqs_provider;
 
+    // Verifica el valor de "side"
     if ((side != NC_SERVER) && (side != NC_CLIENT)) {
         ERRINT;
         return NULL;
     }
 
+    // Crea un contexto de OpenSSL
+    libctx = OSSL_LIB_CTX_new();
+    if (libctx == NULL) {
+        ERR(NULL,"Libnetconf2: Failed to create OSSL_LIB_CTX.");
+        return NULL;
+    }else{
+        WRN(NULL, "Libnetconf2: Created OSSL_LIB_CTX.");
+    }
+
+    // Establece la configuración de OpenSSL
+    setenv("OPENSSL_CONF", "/usr/local/ssl/openssl.cnf", 1);
+
+    // Cargar el proveedor por defecto
+    OSSL_PROVIDER *default_provider = OSSL_PROVIDER_load(libctx, "default");
+    if (default_provider == NULL) {
+        ERR(NULL,"Error loading the default provider\n");
+        OSSL_LIB_CTX_free(libctx);
+        return NULL;
+    }else{
+        WRN(NULL, "Libnetconf2: Loaded default provider.");
+    }
+
+    // Cargar el proveedor OQS
+    oqs_provider = OSSL_PROVIDER_load(libctx, "oqsprovider");
+    if (oqs_provider == NULL) {
+        ERR(NULL,"Error loading the oqsprovider provider\n");
+        OSSL_LIB_CTX_free(libctx);
+        return NULL;
+    } else{
+        WRN(NULL, "Libnetconf2: Loaded oqsprovider.");
+    }
+
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    // Asegúrate de que el proveedor OQS esté disponible
+    if (!OSSL_PROVIDER_available(libctx, "oqsprovider")) {
+        ERR(NULL,"OQS provider not available.\n");
+        OSSL_LIB_CTX_free(libctx);
+        return NULL;
+    }else{
+        WRN(NULL, "Libnetconf2: Oqsprovider available.");
+    }
+
     if (side == NC_SERVER) {
+        tls_cfg = SSL_CTX_new_ex(libctx, NULL, TLS_server_method());
+        if (!tls_cfg) {
+            ERR(NULL,"Error creating server context\n");
+            return NULL;
+        }else{
+            WRN(NULL, "Libnetconf2: TLS SERVER METHOD CORRECTLY.");
+        }
+    } else {
+        // Crear contexto de cliente
+        tls_cfg = SSL_CTX_new_ex(libctx, NULL, TLS_client_method());
+        if (!tls_cfg) {
+            ERR(NULL,"Error creating client context\n");
+             return NULL;
+        }else{
+            WRN(NULL, "Libnetconf2: TLS CLIENT METHOD CORRECTLY.");
+        }
+    }
+    SSL_CTX_set_min_proto_version(tls_cfg, TLS1_3_VERSION);
+    SSL_CTX_set_max_proto_version(tls_cfg, TLS1_3_VERSION);
+    WRN(NULL, "Libnetconf2: TLS 1.3 version.");
+#elif
+    // Fallback para OpenSSL versiones anteriores a 3.0 (si es necesario)
+    if (side == NC_SERVER) {
+        WRN(NULL,"Server created with OPENSSL previous to 3.0, no OQS.\n");
         tls_cfg = SSL_CTX_new(TLS_server_method());
     } else {
+        WRN(NULL,"Client created with OPENSSL previous to 3.0, no OQS.\n");
         tls_cfg = SSL_CTX_new(TLS_client_method());
     }
-    NC_CHECK_ERRMEM_RET(!tls_cfg, NULL)
+#endif
+
+    if (tls_cfg == NULL) {
+        ERR(NULL,"Failed to create SSL_CTX.\n");
+        OSSL_LIB_CTX_free(libctx);
+        return NULL;
+    }
 
     return tls_cfg;
 }
+
 
 void
 nc_tls_config_destroy_wrap(void *tls_cfg)

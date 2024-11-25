@@ -797,19 +797,23 @@ nc_accept_tls_session(struct nc_session *session, struct nc_server_tls_opts *opt
     struct timespec ts_timeout;
     struct nc_tls_verify_cb_data cb_data = {0};
     struct nc_endpt *referenced_endpt;
-    void *tls_cfg, *srv_cert, *srv_pkey, *cert_store, *crl_store;
+    void *srv_cert, *srv_pkey, *cert_store, *crl_store;
     uint32_t cert_count = 0;
 
-    tls_cfg = srv_cert = srv_pkey = cert_store = crl_store = NULL;
+    srv_cert = srv_pkey = cert_store = crl_store = NULL;
 
     /* set verify cb data */
     cb_data.session = session;
     cb_data.opts = opts;
 
+    SSL_CTX *tls_cfg = NULL;
     /* prepare TLS context from which a session will be created */
     tls_cfg = nc_tls_config_new_wrap(NC_SERVER);
     if (!tls_cfg) {
+        ERR(session, "SSL/TLS failed");
         goto fail;
+    }else{
+        WRN(session, "tls_cfg with SSL/TLS context");
     }
 
     /* opaque CA/CRL certificate store */

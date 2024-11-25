@@ -90,7 +90,7 @@ void nc_tls_session_destroy_wrap(void *tls_session);
  * @param[in] side Side of the TLS connection.
  * @return New TLS configuration on success, NULL on fail.
  */
-void * nc_tls_config_new_wrap(int side);
+SSL_CTX * nc_tls_config_new_wrap(int side);
 
 /**
  * @brief Destroys a TLS configuration.

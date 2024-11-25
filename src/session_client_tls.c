@@ -261,9 +261,10 @@ nc_client_tls_session_new(int sock, const char *host, int timeout, struct nc_cli
 {
     int ret = 0, sock_tmp = sock;
     struct timespec ts_timeout;
-    void *tls_session, *tls_cfg, *cli_cert, *cli_pkey, *cert_store, *crl_store;
+    void *tls_session, *cli_cert, *cli_pkey, *cert_store, *crl_store;
 
-    tls_session = tls_cfg = cli_cert = cli_pkey = cert_store = crl_store = NULL;
+    tls_session = cli_cert = cli_pkey = cert_store = crl_store = NULL;
+    SSL_CTX *tls_cfg = NULL;
 
     /* prepare TLS context from which a session will be created */
     tls_cfg = nc_tls_config_new_wrap(NC_CLIENT);
