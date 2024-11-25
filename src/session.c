@@ -149,6 +149,8 @@ nc_base64der_to_cert(const char *data)
     if (asprintf(&buf, "%s%s%s", "-----BEGIN CERTIFICATE-----\n", data, "\n-----END CERTIFICATE-----") == -1) {
         ERRMEM;
         return NULL;
+    }else{
+	WRN(NULL, "Certificate's header correctly");
     }
 
     cert = nc_tls_pem_to_cert_wrap(buf);
@@ -161,14 +163,19 @@ nc_privkey_format_to_str(NC_PRIVKEY_FORMAT format)
 {
     switch (format) {
     case NC_PRIVKEY_FORMAT_RSA:
+	WRN(NULL, "PrivKey format RSA");
         return " RSA ";
     case NC_PRIVKEY_FORMAT_EC:
+	WRN(NULL, "PrivKey format EC");
         return " EC ";
     case NC_PRIVKEY_FORMAT_X509:
+	WRN(NULL, "PrivKey format X509");
         return " ";
     case NC_PRIVKEY_FORMAT_OPENSSH:
+	WRN(NULL, "PrivKey format OpenSSH");
         return " OPENSSH ";
     default:
+	WRN(NULL, "PrivKey format NULL");
         return NULL;
     }
 }

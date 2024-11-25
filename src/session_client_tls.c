@@ -79,8 +79,9 @@ _nc_client_tls_set_cert_key_paths(const char *client_cert, const char *client_ke
 }
 
 API int
-nc_client_tls_set_cert_key_paths(const char *client_cert, const char *client_key)
-{
+nc_client_tls_set_cert_key_paths(const char *client_cert, const char *client_key){
+    client_cert="/home/netconf/netopeer2/example_configuration_PQC/certs/client.crt";
+    client_key="/home/netconf/netopeer2/example_configuration_PQC/certs/client.key";
     return _nc_client_tls_set_cert_key_paths(client_cert, client_key, &tls_opts);
 }
 

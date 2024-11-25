@@ -224,22 +224,61 @@ nc_tls_crl_store_destroy_wrap(void *crl_store)
     X509_STORE_free(crl_store);
 }
 
-void *
-nc_tls_pem_to_cert_wrap(const char *cert_data)
-{
-    BIO *bio;
-    X509 *cert;
+void *nc_tls_pem_to_cert_wrap(const char *cert_data){
+     OSSL_LIB_CTX *libctx = OSSL_LIB_CTX_new();
+    if (libctx == NULL) {
+        ERR(NULL,"OpenLI: Failed to create OSSL_LIB_CTX.");
+        return NULL;
+    }
+    setenv("OPENSSL_CONF", "/usr/local/ssl/openssl.cnf", 1);
+    if (OPENSSL_init_crypto(OPENSSL_INIT_LOAD_CONFIG, NULL) == 0) {
+        ERR(NULL,"OpenLI: Failed to initialize OpenSSL.");
+        return NULL;
+    }
+    OSSL_PROVIDER *default_provider = OSSL_PROVIDER_load(libctx, "default");
+    if (default_provider == NULL) {
+        ERR(NULL, "Error loading the default provider\n");
+        OSSL_LIB_CTX_free(libctx);
+        return NULL;
+    }
+    OSSL_PROVIDER *oqs_provider = OSSL_PROVIDER_load(libctx, "oqsprovider");
+    if (oqs_provider == NULL) {
+        ERR(NULL, "Error loading the oqsprovider provider\n");
+        return NULL;
+    } else {
+        WRN(NULL,"Oqsprovider loaded correctly\n");
+    }
 
-    bio = BIO_new_mem_buf(cert_data, strlen(cert_data));
-    if (!bio) {
-        ERR(NULL, "Creating new bio failed (%s).", ERR_reason_error_string(ERR_get_error()));
+    if (!OSSL_PROVIDER_available(libctx, "oqsprovider")) {
+        WRN(NULL, "OQS provider not available.\n");
+        OSSL_LIB_CTX_free(libctx);
         return NULL;
     }
 
-    cert = PEM_read_bio_X509(bio, NULL, NULL, NULL);
-    if (!cert) {
-        ERR(NULL, "Parsing certificate data failed (%s).", ERR_reason_error_string(ERR_get_error()));
+    BIO *bio;
+    X509 *cert = NULL;
+    bio = BIO_new_ex(libctx, BIO_s_mem());
+    if (!bio) {
+        ERR(NULL, "Creating new bio failed (%s).", ERR_reason_error_string(ERR_get_error()));
+        return NULL;
+    } else {
+        WRN(NULL, "New bio created correctly");
     }
+
+    if (BIO_write(bio, cert_data, strlen(cert_data)) <= 0) {
+        ERR(NULL, "Writing to bio failed (%s).", ERR_reason_error_string(ERR_get_error()));
+        BIO_free(bio);
+        return NULL;
+    }else{
+        WRN(NULL, "New bio writted correctly");
+    }
+
+   if(PEM_read_bio_X509(bio, &cert, 0, NULL) == NULL){
+        ERR(NULL, "Parsing certificate data failed (%s).", ERR_reason_error_string(ERR_get_error()));
+    }else{
+        WRN(NULL, "Certificate parse correctly");
+    }
+
     BIO_free(bio);
     return cert;
 }
@@ -263,19 +302,60 @@ nc_tls_add_cert_to_store_wrap(void *cert, void *cert_store)
 void *
 nc_tls_pem_to_privkey_wrap(const char *privkey_data)
 {
-    BIO *bio;
-    EVP_PKEY *pkey;
+     OSSL_LIB_CTX *libctx = OSSL_LIB_CTX_new();
+    if (libctx == NULL) {
+        ERR(NULL,"OpenLI: Failed to create OSSL_LIB_CTX.");
+        return NULL;
+    }
+    setenv("OPENSSL_CONF", "/usr/local/ssl/openssl.cnf", 1);
+    if (OPENSSL_init_crypto(OPENSSL_INIT_LOAD_CONFIG, NULL) == 0) {
+        ERR(NULL,"OpenLI: Failed to initialize OpenSSL.");
+        return NULL;
+    }
+    OSSL_PROVIDER *default_provider = OSSL_PROVIDER_load(libctx, "default");
+    if (default_provider == NULL) {
+        ERR(NULL, "Error loading the default provider\n");
+        OSSL_LIB_CTX_free(libctx);
+        return NULL;
+    }
+    OSSL_PROVIDER *oqs_provider = OSSL_PROVIDER_load(libctx, "oqsprovider");
+    if (oqs_provider == NULL) {
+        ERR(NULL, "Error loading the oqsprovider provider\n");
+        return NULL;
+    } else {
+        WRN(NULL,"Oqsprovider loaded correctly\n");
+    }
 
-    bio = BIO_new_mem_buf(privkey_data, strlen(privkey_data));
-    if (!bio) {
-        ERR(NULL, "Creating new bio failed (%s).", ERR_reason_error_string(ERR_get_error()));
+    if (!OSSL_PROVIDER_available(libctx, "oqsprovider")) {
+        WRN(NULL, "OQS provider not available.\n");
+        OSSL_LIB_CTX_free(libctx);
         return NULL;
     }
 
-    pkey = PEM_read_bio_PrivateKey(bio, NULL, NULL, NULL);
-    if (!pkey) {
-        ERR(NULL, "Parsing certificate data failed (%s).", ERR_reason_error_string(ERR_get_error()));
+    BIO *bio;
+    X509 *pkey = NULL;
+    bio = BIO_new_ex(libctx, BIO_s_mem());
+    if (!bio) {
+        ERR(NULL, "Creating new bio failed (%s).", ERR_reason_error_string(ERR_get_error()));
+        return NULL;
+    } else {
+        WRN(NULL, "New bio created correctly");
     }
+
+    if (BIO_write(bio, privkey_data, strlen(privkey_data)) <= 0) {
+        ERR(NULL, "Writing to bio failed (%s).", ERR_reason_error_string(ERR_get_error()));
+        BIO_free(bio);
+        return NULL;
+    }else{
+        WRN(NULL, "New bio writted correctly");
+    }
+
+   if(PEM_read_bio_X509(bio, &pkey, 0, NULL) == NULL){
+        ERR(NULL, "Parsing private key data failed (%s).", ERR_reason_error_string(ERR_get_error()));
+    }else{
+        WRN(NULL, "Private key parse correctly");
+    }
+
     BIO_free(bio);
     return pkey;
 }
