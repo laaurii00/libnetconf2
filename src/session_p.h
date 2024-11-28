@@ -80,7 +80,8 @@ typedef enum {
     NC_PRIVKEY_FORMAT_EC,       /**< SEC1 EC format */
     NC_PRIVKEY_FORMAT_X509,     /**< X509 (PKCS8) format */
     NC_PRIVKEY_FORMAT_OPENSSH,  /**< OpenSSH format */
-    NC_PRIVKEY_FORMAT_UNKNOWN   /**< Unknown format */
+    NC_PRIVKEY_FORMAT_UNKNOWN,   /**< Unknown format */
+    NC_PRIVKEY_FORMAT_PKCS8
 } NC_PRIVKEY_FORMAT;
 
 /**

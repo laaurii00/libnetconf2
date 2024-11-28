@@ -468,6 +468,8 @@ nc_server_config_get_private_key_type(const char *format)
         return NC_PRIVKEY_FORMAT_X509;
     } else if (!strcmp(format, "openssh-private-key-format")) {
         return NC_PRIVKEY_FORMAT_OPENSSH;
+    } else if (!strcmp(format, "pkcs8-private-key-format")) {
+        return NC_PRIVKEY_FORMAT_PKCS8;
     } else {
         ERR(NULL, "Private key format (%s) not supported.", format);
         return NC_PRIVKEY_FORMAT_UNKNOWN;

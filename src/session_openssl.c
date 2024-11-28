@@ -97,7 +97,7 @@ nc_tls_config_new_wrap(int side)
     // Cargar el proveedor por defecto
     OSSL_PROVIDER *default_provider = OSSL_PROVIDER_load(libctx, "default");
     if (default_provider == NULL) {
-        ERR(NULL,"Error loading the default provider\n");
+        ERR(NULL,"Error loading the default provider");
         OSSL_LIB_CTX_free(libctx);
         return NULL;
     }else{
@@ -107,7 +107,7 @@ nc_tls_config_new_wrap(int side)
     // Cargar el proveedor OQS
     oqs_provider = OSSL_PROVIDER_load(libctx, "oqsprovider");
     if (oqs_provider == NULL) {
-        ERR(NULL,"Error loading the oqsprovider provider\n");
+        ERR(NULL,"Error loading the oqsprovider provider");
         OSSL_LIB_CTX_free(libctx);
         return NULL;
     } else{
@@ -117,7 +117,7 @@ nc_tls_config_new_wrap(int side)
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
     // Asegúrate de que el proveedor OQS esté disponible
     if (!OSSL_PROVIDER_available(libctx, "oqsprovider")) {
-        ERR(NULL,"OQS provider not available.\n");
+        ERR(NULL,"OQS provider not available.");
         OSSL_LIB_CTX_free(libctx);
         return NULL;
     }else{
@@ -127,7 +127,7 @@ nc_tls_config_new_wrap(int side)
     if (side == NC_SERVER) {
         tls_cfg = SSL_CTX_new_ex(libctx, NULL, TLS_server_method());
         if (!tls_cfg) {
-            ERR(NULL,"Error creating server context\n");
+            ERR(NULL,"Error creating server context");
             return NULL;
         }else{
             WRN(NULL, "Libnetconf2: TLS SERVER METHOD CORRECTLY.");
@@ -136,7 +136,7 @@ nc_tls_config_new_wrap(int side)
         // Crear contexto de cliente
         tls_cfg = SSL_CTX_new_ex(libctx, NULL, TLS_client_method());
         if (!tls_cfg) {
-            ERR(NULL,"Error creating client context\n");
+            ERR(NULL,"Error creating client context");
              return NULL;
         }else{
             WRN(NULL, "Libnetconf2: TLS CLIENT METHOD CORRECTLY.");
@@ -148,16 +148,16 @@ nc_tls_config_new_wrap(int side)
 #elif
     // Fallback para OpenSSL versiones anteriores a 3.0 (si es necesario)
     if (side == NC_SERVER) {
-        WRN(NULL,"Server created with OPENSSL previous to 3.0, no OQS.\n");
+        WRN(NULL,"Server created with OPENSSL previous to 3.0, no OQS.");
         tls_cfg = SSL_CTX_new(TLS_server_method());
     } else {
-        WRN(NULL,"Client created with OPENSSL previous to 3.0, no OQS.\n");
+        WRN(NULL,"Client created with OPENSSL previous to 3.0, no OQS.");
         tls_cfg = SSL_CTX_new(TLS_client_method());
     }
 #endif
 
     if (tls_cfg == NULL) {
-        ERR(NULL,"Failed to create SSL_CTX.\n");
+        ERR(NULL,"Failed to create SSL_CTX.");
         OSSL_LIB_CTX_free(libctx);
         return NULL;
     }
@@ -237,20 +237,20 @@ void *nc_tls_pem_to_cert_wrap(const char *cert_data){
     }
     OSSL_PROVIDER *default_provider = OSSL_PROVIDER_load(libctx, "default");
     if (default_provider == NULL) {
-        ERR(NULL, "Error loading the default provider\n");
+        ERR(NULL, "Error loading the default provider.");
         OSSL_LIB_CTX_free(libctx);
         return NULL;
     }
     OSSL_PROVIDER *oqs_provider = OSSL_PROVIDER_load(libctx, "oqsprovider");
     if (oqs_provider == NULL) {
-        ERR(NULL, "Error loading the oqsprovider provider\n");
+        ERR(NULL, "Error loading the oqsprovider provider.");
         return NULL;
     } else {
-        WRN(NULL,"Oqsprovider loaded correctly\n");
+        WRN(NULL,"Oqsprovider loaded correctly.");
     }
 
     if (!OSSL_PROVIDER_available(libctx, "oqsprovider")) {
-        WRN(NULL, "OQS provider not available.\n");
+        WRN(NULL, "OQS provider not available.");
         OSSL_LIB_CTX_free(libctx);
         return NULL;
     }
@@ -262,7 +262,7 @@ void *nc_tls_pem_to_cert_wrap(const char *cert_data){
         ERR(NULL, "Creating new bio failed (%s).", ERR_reason_error_string(ERR_get_error()));
         return NULL;
     } else {
-        WRN(NULL, "New bio created correctly");
+        WRN(NULL, "New bio created correctly.");
     }
 
     if (BIO_write(bio, cert_data, strlen(cert_data)) <= 0) {
@@ -270,13 +270,13 @@ void *nc_tls_pem_to_cert_wrap(const char *cert_data){
         BIO_free(bio);
         return NULL;
     }else{
-        WRN(NULL, "New bio writted correctly");
+        WRN(NULL, "New bio writted correctly.");
     }
 
    if(PEM_read_bio_X509(bio, &cert, 0, NULL) == NULL){
         ERR(NULL, "Parsing certificate data failed (%s).", ERR_reason_error_string(ERR_get_error()));
     }else{
-        WRN(NULL, "Certificate parse correctly");
+        WRN(NULL, "Certificate parse correctly.");
     }
 
     BIO_free(bio);
@@ -299,8 +299,7 @@ nc_tls_add_cert_to_store_wrap(void *cert, void *cert_store)
     return 0;
 }
 
-void *
-nc_tls_pem_to_privkey_wrap(const char *privkey_data)
+void *nc_tls_pem_to_privkey_wrap(const char *privkey_data)
 {
      OSSL_LIB_CTX *libctx = OSSL_LIB_CTX_new();
     if (libctx == NULL) {
@@ -314,26 +313,26 @@ nc_tls_pem_to_privkey_wrap(const char *privkey_data)
     }
     OSSL_PROVIDER *default_provider = OSSL_PROVIDER_load(libctx, "default");
     if (default_provider == NULL) {
-        ERR(NULL, "Error loading the default provider\n");
+        ERR(NULL, "Error loading the default provider");
         OSSL_LIB_CTX_free(libctx);
         return NULL;
     }
     OSSL_PROVIDER *oqs_provider = OSSL_PROVIDER_load(libctx, "oqsprovider");
     if (oqs_provider == NULL) {
-        ERR(NULL, "Error loading the oqsprovider provider\n");
+        ERR(NULL, "Error loading the oqsprovider provider");
         return NULL;
     } else {
-        WRN(NULL,"Oqsprovider loaded correctly\n");
+        WRN(NULL,"Oqsprovider loaded correctl");
     }
 
     if (!OSSL_PROVIDER_available(libctx, "oqsprovider")) {
-        WRN(NULL, "OQS provider not available.\n");
+        WRN(NULL, "OQS provider not available");
         OSSL_LIB_CTX_free(libctx);
         return NULL;
     }
 
     BIO *bio;
-    X509 *pkey = NULL;
+    X509 *privkey = NULL;
     bio = BIO_new_ex(libctx, BIO_s_mem());
     if (!bio) {
         ERR(NULL, "Creating new bio failed (%s).", ERR_reason_error_string(ERR_get_error()));
@@ -350,14 +349,14 @@ nc_tls_pem_to_privkey_wrap(const char *privkey_data)
         WRN(NULL, "New bio writted correctly");
     }
 
-   if(PEM_read_bio_X509(bio, &pkey, 0, NULL) == NULL){
+   if(PEM_read_bio_PrivateKey(bio, &privkey, 0, NULL) == NULL){
         ERR(NULL, "Parsing private key data failed (%s).", ERR_reason_error_string(ERR_get_error()));
     }else{
         WRN(NULL, "Private key parse correctly");
     }
 
     BIO_free(bio);
-    return pkey;
+    return privkey;
 }
 
 int
@@ -994,10 +993,10 @@ nc_server_tls_print_accept_err_wrap(int accept_ret, void *tls_session)
 {
     switch (SSL_get_error(tls_session, accept_ret)) {
     case SSL_ERROR_SYSCALL:
-        ERR(NULL, "TLS accept failed (%s).", strerror(errno));
+        ERR(NULL, "TLS accept failed SSL_ERROR_SYSCALL: (%s).", strerror(errno));
         break;
     case SSL_ERROR_SSL:
-        ERR(NULL, "TLS accept failed (%s).", ERR_reason_error_string(ERR_get_error()));
+        ERR(NULL, "TLS accept failed SSL_ERROR_SSL: (%s).", ERR_reason_error_string(ERR_get_error()));
         break;
     default:
         ERR(NULL, "TLS accept failed.");
@@ -1572,6 +1571,7 @@ nc_tls_process_cipher_suite_wrap(const char *cipher, char **out)
 int
 nc_tls_append_cipher_suite_wrap(struct nc_server_tls_opts *opts, const char *cipher_suite)
 {
+    WRN(NULL, "Available ciphers:  %s\n.", cipher_suite);
     if (!opts->ciphers) {
         /* first entry */
         opts->ciphers = strdup(cipher_suite);

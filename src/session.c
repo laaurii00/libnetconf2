@@ -174,6 +174,9 @@ nc_privkey_format_to_str(NC_PRIVKEY_FORMAT format)
     case NC_PRIVKEY_FORMAT_OPENSSH:
 	WRN(NULL, "PrivKey format OpenSSH");
         return " OPENSSH ";
+    case NC_PRIVKEY_FORMAT_PKCS8:
+    WRN(NULL, "PrivKey format PKCS8");
+        return " ";
     default:
 	WRN(NULL, "PrivKey format NULL");
         return NULL;
@@ -1725,3 +1728,4 @@ cleanup:
 }
 
 #endif
+
