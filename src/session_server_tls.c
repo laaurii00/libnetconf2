@@ -749,8 +749,9 @@ static int nc_server_tls_accept_check(int accept_ret, void *tls_session){
 
     /* check certificate verification result */
     verify = nc_tls_get_verify_result_wrap(tls_session);
+    WRN(NULL, "HANDSHAKE: Client  verified %s and TLS_Session %s", verify, tls_session);
     if (!verify && (accept_ret == 1)) {
-        VRB(NULL, "Client certificate verified.");
+        WRN(NULL, "Client certificate verified.");
     } else if (verify) {
         err = nc_tls_verify_error_string_wrap(verify);
         ERR(NULL, "Client certificate error (%s).", err);
@@ -876,6 +877,7 @@ int nc_accept_tls_session(struct nc_session *session, struct nc_server_tls_opts 
 
     /* set supported TLS versions */
     if (opts->tls_versions) {
+        WRN(session, "TLS version: %s", opts->tls_versions)
         if (nc_server_tls_set_tls_versions_wrap(tls_cfg, opts->tls_versions)) {
             ERR(session, "Setting supported server TLS versions failed.");
             goto fail;
@@ -886,6 +888,7 @@ int nc_accept_tls_session(struct nc_session *session, struct nc_server_tls_opts 
 
     /* set supported cipher suites */
     if (opts->ciphers) {
+        WRN(session, "Supported ciphers: %s", opts->ciphers);
         nc_server_tls_set_cipher_suites_wrap(tls_cfg, opts->ciphers);
     }
     /* set verify flags, callback and its data */
@@ -894,6 +897,12 @@ int nc_accept_tls_session(struct nc_session *session, struct nc_server_tls_opts 
     /* init TLS context and store data which may be needed later in it */
     if (nc_tls_init_ctx_wrap(sock, srv_cert, srv_pkey, cert_store, crl_store, &session->ti.tls.ctx)) {
         goto fail;
+    }else{
+        WRN(session, "Session initilization previous handshake correctly asigned.");
+        WRN(session, "Server certs: %s.", srv_cert);
+        WRN(session, "Server key: %s.", srv_pkey);
+        WRN(session, "Cert store: %s.", cert_store);
+        WRN(session, "Cerl store: %s.", crl_store);
     }
 
     /* memory is managed by context now */
@@ -933,6 +942,8 @@ int nc_accept_tls_session(struct nc_session *session, struct nc_server_tls_opts 
     /* check if handshake was ok */
     if (nc_server_tls_accept_check(rc, session->ti.tls.session) != 1) {
         goto fail;
+    }else{
+         WRN(session, "TLS handshake ok.");
     }
 
     return 1;

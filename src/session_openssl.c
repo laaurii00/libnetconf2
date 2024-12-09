@@ -411,30 +411,14 @@ nc_server_tls_set_tls_versions_wrap(void *tls_cfg, unsigned int tls_versions)
     int rc = 1;
 
     /* first set the minimum version */
-    if (tls_versions & NC_TLS_VERSION_10) {
-        rc = SSL_CTX_set_min_proto_version(tls_cfg, TLS1_VERSION);
-    } else if (tls_versions & NC_TLS_VERSION_11) {
-        rc = SSL_CTX_set_min_proto_version(tls_cfg, TLS1_1_VERSION);
-    } else if (tls_versions & NC_TLS_VERSION_12) {
-        rc = SSL_CTX_set_min_proto_version(tls_cfg, TLS1_2_VERSION);
-    } else if (tls_versions & NC_TLS_VERSION_13) {
-        rc = SSL_CTX_set_min_proto_version(tls_cfg, TLS1_3_VERSION);
-    }
+    rc = SSL_CTX_set_min_proto_version(tls_cfg, TLS1_3_VERSION);
     if (!rc) {
         ERR(NULL, "Setting TLS min version failed (%s).", ERR_reason_error_string(ERR_get_error()));
         return 1;
     }
 
     /* then set the maximum version */
-    if (tls_versions & NC_TLS_VERSION_13) {
-        rc = SSL_CTX_set_max_proto_version(tls_cfg, TLS1_3_VERSION);
-    } else if (tls_versions & NC_TLS_VERSION_12) {
-        rc = SSL_CTX_set_max_proto_version(tls_cfg, TLS1_2_VERSION);
-    } else if (tls_versions & NC_TLS_VERSION_11) {
-        rc = SSL_CTX_set_max_proto_version(tls_cfg, TLS1_1_VERSION);
-    } else if (tls_versions & NC_TLS_VERSION_10) {
-        rc = SSL_CTX_set_max_proto_version(tls_cfg, TLS1_VERSION);
-    }
+    rc = SSL_CTX_set_max_proto_version(tls_cfg, TLS1_3_VERSION);
     if (!rc) {
         ERR(NULL, "Setting TLS max version failed (%s).", ERR_reason_error_string(ERR_get_error()));
         return 1;
@@ -492,6 +476,7 @@ nc_server_tls_verify_cb(int preverify_ok, X509_STORE_CTX *x509_ctx)
     if (preverify_ok) {
         /* in-built verification was successful */
         ret = nc_server_tls_verify_cert(cert, depth, 1, data);
+        WRN(NULL, "In-built verification was successful (%s).", nc_server_tls_verify_cert(cert, depth, 1, data));
     } else {
         /* in-built verification failed, but the client still may be authenticated if:
          * 1) the peer cert matches any configured end-entity cert
@@ -926,11 +911,15 @@ nc_tls_setup_config_from_ctx_wrap(struct nc_tls_ctx *tls_ctx, int side, void *tl
     if (SSL_CTX_use_certificate(tls_cfg, tls_ctx->cert) != 1) {
         ERR(NULL, "Setting up TLS certificate failed (%s).", ERR_reason_error_string(ERR_get_error()));
         return 1;
+    }else{
+        WRN(NULL, "Setting up TLS certificate correctly.");
     }
 
     if (SSL_CTX_use_PrivateKey(tls_cfg, tls_ctx->pkey) != 1) {
         ERR(NULL, "Setting up TLS private key failed (%s).", ERR_reason_error_string(ERR_get_error()));
         return 1;
+    }else{
+        WRN(NULL, "Setting up TLS Server Private Key correctly.");
     }
 
     /* disable server-side automatic chain building */
