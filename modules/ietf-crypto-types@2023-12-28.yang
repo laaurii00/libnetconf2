@@ -220,6 +220,17 @@ module ietf-crypto-types {
          Encoding Rules (DER) 02/2021.";
   }
 
+  identity pkcs8-private-key-format {
+    base private-key-format;
+    description
+      "XXX";
+    reference
+      "RFC XXX:
+         XXX
+       ITU-T X.690:
+         XXX";
+  }
+
   identity one-asymmetric-key-format {
     if-feature "one-asymmetric-key-format";
     base private-key-format;

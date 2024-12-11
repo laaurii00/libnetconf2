@@ -212,6 +212,8 @@ nc_server_config_util_privkey_format_to_identityref(NC_PRIVKEY_FORMAT format)
         return "libnetconf2-netconf-server:private-key-info-format";
     case NC_PRIVKEY_FORMAT_OPENSSH:
         return "libnetconf2-netconf-server:openssh-private-key-format";
+     case NC_PRIVKEY_FORMAT_PKCS8:
+        return "ietf-crypto-types:pkcs8-private-key-format";
     default:
         ERR(NULL, "Private key type not supported.");
         return NULL;
@@ -651,6 +653,9 @@ nc_server_config_util_get_privkey_format(const char *privkey, NC_PRIVKEY_FORMAT 
     } else if (!strncmp(privkey, NC_SEC1_EC_PRIVKEY_HEADER, strlen(NC_SEC1_EC_PRIVKEY_HEADER))) {
         /* it's EC privkey in SEC1 format */
         *privkey_format = NC_PRIVKEY_FORMAT_EC;
+    } else if (!strncmp(privkey, NC_PKCS8_PRIVKEY_HEADER, strlen(NC_PKCS8_PRIVKEY_HEADER))) {
+        /* it's EC privkey in SEC1 format */
+        *privkey_format = NC_PRIVKEY_FORMAT_PKCS8;
     } else {
         /* not supported */
         return 1;
@@ -793,6 +798,7 @@ nc_server_config_util_get_privkey(const char *privkey_path, NC_PRIVKEY_FORMAT *p
     /* fall-through */
     case NC_PRIVKEY_FORMAT_RSA:
     case NC_PRIVKEY_FORMAT_EC:
+    case NC_PRIVKEY_FORMAT_PKCS8:
     case NC_PRIVKEY_FORMAT_X509:
         /* the TLS lib can do this */
         ret = nc_server_config_util_get_privkey_libtls(privkey_path, &priv, pkey);

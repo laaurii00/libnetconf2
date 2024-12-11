@@ -112,7 +112,7 @@ nc_base64der_to_privkey(const char *in, const char *key_str)
         ERRMEM;
         return NULL;
     }
-
+    WRN(NULL, "buf: %s\n", buf);
     pkey = nc_tls_pem_to_privkey_wrap(buf);
     free(buf);
     return pkey;
@@ -743,9 +743,7 @@ nc_server_tls_load_trusted_certs(struct nc_cert_grouping *ca_certs, void *cert_s
     return 0;
 }
 
-static int
-nc_server_tls_accept_check(int accept_ret, void *tls_session)
-{
+static int nc_server_tls_accept_check(int accept_ret, void *tls_session){
     uint32_t verify;
     char *err;
 
@@ -790,9 +788,7 @@ nc_server_tls_get_num_certs(struct nc_cert_grouping *certs_grp)
     return count;
 }
 
-int
-nc_accept_tls_session(struct nc_session *session, struct nc_server_tls_opts *opts, int sock, int timeout)
-{
+int nc_accept_tls_session(struct nc_session *session, struct nc_server_tls_opts *opts, int sock, int timeout){
     int rc, timeouted = 0;
     struct timespec ts_timeout;
     struct nc_tls_verify_cb_data cb_data = {0};
@@ -807,6 +803,7 @@ nc_accept_tls_session(struct nc_session *session, struct nc_server_tls_opts *opt
     cb_data.opts = opts;
 
     SSL_CTX *tls_cfg = NULL;
+    WRN(NULL, "INIT: tls_cfg");
     /* prepare TLS context from which a session will be created */
     tls_cfg = nc_tls_config_new_wrap(NC_SERVER);
     if (!tls_cfg) {
@@ -816,22 +813,27 @@ nc_accept_tls_session(struct nc_session *session, struct nc_server_tls_opts *opt
         WRN(session, "tls_cfg with SSL/TLS context");
     }
 
+    WRN(NULL, "INIT: Cert and Private key load");
+    /* load server's key and certificate */
+    if (nc_server_tls_load_server_cert_key(opts, &srv_cert, &srv_pkey)) {
+        ERR(session, "Loading server certificate and/or private key failed.");
+        goto fail;
+    }else{
+        WRN(session, "Loading server certificate and private key correctly.");
+    }
+
+    WRN(NULL, "INIT: CA load");
     /* opaque CA/CRL certificate store */
     cert_store = nc_tls_cert_store_new_wrap();
     if (!cert_store) {
         goto fail;
     }
-
-    /* load server's key and certificate */
-    if (nc_server_tls_load_server_cert_key(opts, &srv_cert, &srv_pkey)) {
-        ERR(session, "Loading server certificate and/or private key failed.");
-        goto fail;
-    }
-
     /* load trusted CA certificates */
     if (nc_server_tls_load_trusted_certs(&opts->ca_certs, cert_store)) {
         ERR(session, "Loading server CA certs failed.");
         goto fail;
+    }else{
+        WRN(session, "Loading server CA correctly.");
     }
 
     /* load referenced endpoint's trusted CA certs if set */
@@ -845,6 +847,8 @@ nc_accept_tls_session(struct nc_session *session, struct nc_server_tls_opts *opt
             ERR(session, "Loading server CA certs from referenced endpoint failed.");
             goto fail;
         }
+    }else{
+        WRN(session, "No configured: load referenced endpoint's trusted CA cert.");
     }
 
     /* Check if there are no CA/end entity certs configured, which is a valid config.
@@ -859,11 +863,15 @@ nc_accept_tls_session(struct nc_session *session, struct nc_server_tls_opts *opt
     if (cert_count <= 0) {
         ERR(session, "Neither CA nor end-entity certificates configured.");
         goto fail;
+    }else{
+        WRN(session, "CA certificates configured.");
     }
 
     if (nc_session_tls_crl_from_cert_ext_fetch(srv_cert, cert_store, &crl_store)) {
         ERR(session, "Loading server CRL failed.");
         goto fail;
+    }else{
+        WRN(session, "Server CRL configured: %s.", crl_store);
     }
 
     /* set supported TLS versions */
@@ -871,6 +879,8 @@ nc_accept_tls_session(struct nc_session *session, struct nc_server_tls_opts *opt
         if (nc_server_tls_set_tls_versions_wrap(tls_cfg, opts->tls_versions)) {
             ERR(session, "Setting supported server TLS versions failed.");
             goto fail;
+        }else{
+            WRN(session, "Setting supported server TLS versions correctly  %s\n.", opts->tls_versions);
         }
     }
 
@@ -878,7 +888,6 @@ nc_accept_tls_session(struct nc_session *session, struct nc_server_tls_opts *opt
     if (opts->ciphers) {
         nc_server_tls_set_cipher_suites_wrap(tls_cfg, opts->ciphers);
     }
-
     /* set verify flags, callback and its data */
     nc_server_tls_set_verify_wrap(tls_cfg, &cb_data);
 
