@@ -229,14 +229,9 @@ module ietf-crypto-types {
         which also includes DER [X.690].
         2. The result of step 1 is encrypted with the secret key to give an
         octet string, the result of the encryption process.";
-
-      The header of the private key:
-       -----BEGIN PRIVATE KEY-----
-      The footer of the private key:
-       -----END PRIVATE KEY-----
-
     reference
-      "RFC 5958:  Asymmetric Key Packages";
+      "RFC 5958:  
+         Asymmetric Key Packages";
   }
 
   identity one-asymmetric-key-format {
