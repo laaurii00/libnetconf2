@@ -1571,7 +1571,6 @@ nc_tls_process_cipher_suite_wrap(const char *cipher, char **out)
 int
 nc_tls_append_cipher_suite_wrap(struct nc_server_tls_opts *opts, const char *cipher_suite)
 {
-    WRN(NULL, "Available ciphers:  %s\n.", cipher_suite);
     if (!opts->ciphers) {
         /* first entry */
         opts->ciphers = strdup(cipher_suite);

@@ -112,7 +112,6 @@ nc_base64der_to_privkey(const char *in, const char *key_str)
         ERRMEM;
         return NULL;
     }
-    WRN(NULL, "buf: %s\n", buf);
     pkey = nc_tls_pem_to_privkey_wrap(buf);
     free(buf);
     return pkey;
@@ -803,7 +802,6 @@ int nc_accept_tls_session(struct nc_session *session, struct nc_server_tls_opts 
     cb_data.opts = opts;
 
     SSL_CTX *tls_cfg = NULL;
-    WRN(NULL, "INIT: tls_cfg");
     /* prepare TLS context from which a session will be created */
     tls_cfg = nc_tls_config_new_wrap(NC_SERVER);
     if (!tls_cfg) {
@@ -813,7 +811,6 @@ int nc_accept_tls_session(struct nc_session *session, struct nc_server_tls_opts 
         WRN(session, "tls_cfg with SSL/TLS context");
     }
 
-    WRN(NULL, "INIT: Cert and Private key load");
     /* load server's key and certificate */
     if (nc_server_tls_load_server_cert_key(opts, &srv_cert, &srv_pkey)) {
         ERR(session, "Loading server certificate and/or private key failed.");
@@ -822,7 +819,6 @@ int nc_accept_tls_session(struct nc_session *session, struct nc_server_tls_opts 
         WRN(session, "Loading server certificate and private key correctly.");
     }
 
-    WRN(NULL, "INIT: CA load");
     /* opaque CA/CRL certificate store */
     cert_store = nc_tls_cert_store_new_wrap();
     if (!cert_store) {

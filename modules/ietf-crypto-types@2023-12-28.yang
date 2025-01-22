@@ -223,12 +223,20 @@ module ietf-crypto-types {
   identity pkcs8-private-key-format {
     base private-key-format;
     description
-      "XXX";
+      "The encryption process involves the following two steps:
+        1. The private-key information is encoded, yielding an octet string.
+        Generators SHOULD use DER [X.690] and receivers MUST support BER [X.690],
+        which also includes DER [X.690].
+        2. The result of step 1 is encrypted with the secret key to give an
+        octet string, the result of the encryption process.";
+
+      The header of the private key:
+       -----BEGIN PRIVATE KEY-----
+      The footer of the private key:
+       -----END PRIVATE KEY-----
+
     reference
-      "RFC XXX:
-         XXX
-       ITU-T X.690:
-         XXX";
+      "RFC 5958:  Asymmetric Key Packages";
   }
 
   identity one-asymmetric-key-format {
