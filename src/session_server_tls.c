@@ -839,8 +839,6 @@ int nc_accept_tls_session(struct nc_session *session, struct nc_server_tls_opts 
             ERR(session, "Loading server CA certs from referenced endpoint failed.");
             goto fail;
         }
-    }else{
-        WRN(session, "No configured: load referenced endpoint's trusted CA cert.");
     }
 
     /* Check if there are no CA/end entity certs configured, which is a valid config.
