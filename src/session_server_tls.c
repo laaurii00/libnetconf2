@@ -599,10 +599,6 @@ nc_server_tls_verify_cert(void *cert, int depth, int trusted, struct nc_tls_veri
         goto cleanup;
     }
 
-    VRB(session, "Cert verify: depth %d.", depth);
-    VRB(session, "Cert verify: subject: %s.", subject);
-    VRB(session, "Cert verify: issuer: %s.", issuer);
-
     if (depth == 0) {
         if (!trusted) {
             /* peer cert is not trusted, so it must match any configured end-entity cert
